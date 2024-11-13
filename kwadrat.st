@@ -19,7 +19,20 @@ initialize: liczbaWierzcholkow name: nowaNazwa
 	wierzcholki:=Array new: liczbaWierzcholkow.
 	wierzcholki at: 1 put: 0@0.! !
 
-!Wielokat methodsFor: 'accessing'!
+!Wielokat methodsFor: 'printing'!
+
+drukuj
+    "Wypisz nazwę figury"
+    Transcript show: 'Figura: ', nazwa; cr.
+    
+    "Wypisz wierzchołki figury"
+    Transcript show: 'Wierzchołki: '; cr.
+    wierzcholki do: [ :w |
+        Transcript show: w printString; cr.
+    ].
+! !
+
+Wielokat methodsFor: 'accessing'!
 
 nazwa
 	"podaje nazwe wielokata"
@@ -34,7 +47,7 @@ nazwa: nowa_nazwa
 
 
 Wielokat subclass: #Kwadrat
-	instanceVariableNames: ''
+	instanceVariableNames: 'bok'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'JezykiProgramowania'!
@@ -57,11 +70,26 @@ pole
     
 	^(wierzcholki at: 2) x squared! !
 
+!Kwadrat methodsFor: 'actions'!
+
+wysrodkuj
+    | przesuniecie |
+    
+    przesuniecie := (0.5 * bok).
+    
+    "Przesuwamy każdy wierzchołek tak, aby środek figury był w (0,0)"
+    wierzcholki := wierzcholki collect: [ :w |
+        (w x - przesuniecie) @ (w y - przesuniecie)
+    ].
+! !
+
+
 !Kwadrat methodsFor: 'initialize-release'!
 
-initialize: bok
+initialize: bokValue
 	"tworz kwadrat o podanym boku"
-
+    
+    bok := bokValue.
 	super initialize: 4 name: 'Kwadrat'.
 	wierzcholki at: 2 put: bok@0.
 	wierzcholki at: 3 put: bok@bok.
@@ -70,7 +98,7 @@ initialize: bok
 
 
 Wielokat subclass: #SzeciokatForemny
-	instanceVariableNames: ''
+	instanceVariableNames: 'bok'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'JezykiProgramowania'!
@@ -104,11 +132,27 @@ pole
     ^pole.
 ! !
 
+!SzeciokatForemny methodsFor: 'actions'!
+
+wysrodkuj
+    | przesuniecieX przesuniecieY |
+    
+    przesuniecieX := (0.5 * bok).
+    przesuniecieY := (bok * (3 sqrt) / 2).
+    
+    "Przesuwamy każdy wierzchołek tak, aby środek figury był w (0,0)"
+    wierzcholki := wierzcholki collect: [ :w |
+        (w x - przesuniecieX) @ (w y - przesuniecieY)
+    ].
+! !
+    
+
 !SzeciokatForemny methodsFor: 'initialize-release'!
 
-initialize: bok
+initialize: bokValue
 	"tworz kwadrat o podanym boku"
-
+    
+    bok := bokValue.
 	super initialize: 6 name: 'SzeciokatForemny'.
 	wierzcholki at: 2 put: bok@0.
 	wierzcholki at: 3 put: (bok + (bok * 0.5))@(bok * (3 sqrt)/2).
@@ -117,7 +161,7 @@ initialize: bok
 	wierzcholki at: 6 put: (bok * 0.5 * (-1))@(bok * (3 sqrt)/2).! !
 
 
-| szesciokat1 szesciokat2 wynikowaFigura |
+"| szesciokat1 szesciokat2 wynikowaFigura |
 
 szesciokat1 := SzeciokatForemny new initialize: 5.
 szesciokat2 := SzeciokatForemny new initialize: 7.
@@ -127,4 +171,18 @@ Transcript show: 'Pole szesciokata o boku 7: ', (szesciokat2 pole asString); cr.
 
 wynikowaFigura := szesciokat1 + szesciokat2.
 
-Transcript show: 'Pole wynikowej figury: ', (wynikowaFigura pole asString); cr.
+Transcript show: 'Pole wynikowej figury: ', (wynikowaFigura pole asString); cr. "
+
+| szesciokat kwadrat |
+
+szesciokat := SzeciokatForemny new initialize: 5.
+kwadrat := Kwadrat new initialize: 4.
+
+kwadrat drukuj.
+kwadrat wysrodkuj.
+kwadrat drukuj.
+
+
+szesciokat drukuj.
+szesciokat wysrodkuj.
+szesciokat drukuj.
