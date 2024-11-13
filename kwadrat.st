@@ -111,9 +111,9 @@ initialize: bok
 
 	super initialize: 6 name: 'SzeciokatForemny'.
 	wierzcholki at: 2 put: bok@0.
-	wierzcholki at: 3 put: (bok * 0.5)@(bok * (3 sqrt)/2).
-	wierzcholki at: 4 put: bok@(bok * (3 sqrt)/2).
-	wierzcholki at: 5 put: 0@(bok * (3 sqrt)/2).
+	wierzcholki at: 3 put: (bok + (bok * 0.5))@(bok * (3 sqrt)/2).
+	wierzcholki at: 4 put: bok@(bok * (3 sqrt)).
+	wierzcholki at: 5 put: 0@(bok * (3 sqrt)).
 	wierzcholki at: 6 put: (bok * 0.5 * (-1))@(bok * (3 sqrt)/2).! !
 
 
