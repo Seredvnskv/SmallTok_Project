@@ -136,7 +136,8 @@ obroc: kat
         ].
 
         "Aktualizacja wartości obrotu figury"
-        self obrot: kat.
+	self obrot: self obrot + kat.
+
         Transcript show: 'Obracam ', (self nazwa )asString, ' o ', kat asString, ' stopni.'; cr; cr.
 
 
@@ -268,7 +269,7 @@ kwadrat2 := Kwadrat new initialize: 3.
 
 wynikowaFigura := kwadrat1 + kwadrat2.
 
-szesciokat1 := SzeciokatForemny new initialize: 5.
+szesciokat1 := SzeciokatForemny new initialize: 3.
 szesciokat1 wysrodkuj.
 szesciokat1 drukuj.
 szesciokat1 obroc: 60.
