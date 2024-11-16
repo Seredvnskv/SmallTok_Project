@@ -5,7 +5,7 @@
 
 
 Object subclass: #Wielokat
-	instanceVariableNames: 'wierzcholki nazwa bok obrot'
+	instanceVariableNames: 'wierzcholki nazwa bok obrot wysrodkowana'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'JezykiProgramowania'!
@@ -18,18 +18,20 @@ initialize: liczbaWierzcholkow name: nowaNazwa
 	nazwa:=nowaNazwa.
 	wierzcholki:=Array new: liczbaWierzcholkow.
 	wierzcholki at: 1 put: 0@0.
-	obrot:=0.! !
+	obrot:=0.
+	wysrodkowana:=false.
+    Transcript show: 'Utworzono nową figurę: '; cr.
+
+	!!
 
 !Wielokat methodsFor: 'accessing'!
 
 nazwa
 	"podaje nazwe wielokata"
-
 	^nazwa!
 
 nazwa: nowa_nazwa
 	"ustawia nowa nazwe wielokata"
-
 	nazwa:=nowa_nazwa!
 	
 bok
@@ -39,12 +41,29 @@ bok: nowyBok
     bok := nowyBok.!
     
 obrot
+    "Podaje wartość kąta o który figura została obrócona"
     ^obrot.!
 
 obrot: nowyObrot
-    obrot := nowyObrot.! !
+    "ustawia wartość kąta obrotu"
+    obrot := nowyObrot.! 
+    
+wysrodkowana
+    "zwraca info czy figura została wyśrodkowana"
+    ^wysrodkowana.!
+
+srodekX
+    "Zwraca wartość współrzędnej X środka figury"
+    
+    ^wysrodkowana
+        ifTrue: [0]
+        ifFalse: [bok / 2].!!
+
 
 !Wielokat methodsFor: 'actions'!
+
+srodekY
+    self error: 'Metoda srodekY musi być zaimplementowana w podklasach'.!
 
 pole
     "Abstrakcyjna metoda pole; musi być nadpisana w podklasach."
@@ -54,72 +73,77 @@ pole
 !Wielokat methodsFor: 'actions'!
 
 drukuj
-    | polowaWierzcholkow srodkowyWierzcholek sumaX sumaY |
-    Transcript show: 'Wspolrzedne wierzcholkow figury: ', (self nazwa) asString; cr.
+    | sumaX sumaY |
+    Transcript show: 'Nazwa figury: ', (self nazwa) asString; cr.
+    Transcript show: 'Długość boku: ', (self bok) asString; cr.
+    Transcript show: 'Pole figury: ', (self pole) asString; cr.
+
+    Transcript show: 'Wierzchołki: '; cr.
     wierzcholki do: [:wierzcholek |
         Transcript show: '(', wierzcholek x asString, ', ', wierzcholek y asString, ')'; cr.
     ].
-    Transcript show: 'Pole figury: ', (self pole) asString; cr.
     
-    "Sprawdź czy figura jest wyśrodkowana"
-    polowaWierzcholkow := wierzcholki size // 2.
-    srodkowyWierzcholek := wierzcholki at: (polowaWierzcholkow + 1).
-    
-    sumaX := ((wierzcholki first) x + (srodkowyWierzcholek x)).
-    sumaY := ((wierzcholki first) y + (srodkowyWierzcholek y)).
-    
-    (sumaX = 0 and: [sumaY = 0])
+    wysrodkowana
         ifTrue: [Transcript show: 'Figura jest wyśrodkowana.'; cr]
         ifFalse: [Transcript show: 'Figura nie jest wyśrodkowana.'; cr].
         
-    Transcript show: 'Figura została obrócona o ',  (self obrot) asString, ' stopni względem pozycji startowej.'; cr.
+    Transcript show: 'Figura została obrócona o ', (self obrot )asString, ' stopni względem pozycji startowej.'; cr; cr.
 !
 
+wysrodkuj
+"Przesun figure na srodek ukladu wspolrzednych, jeśli nie jest jeszcze wysrodkowana."
+    wysrodkowana ifFalse: [
+        | dX dY |
+        dX := self srodekX.
+        dY := self srodekY.
+        wierzcholki do: [:wierzcholek |
+            wierzcholek x: wierzcholek x - dX.
+            wierzcholek y: wierzcholek y - dY
+        ].
+        wysrodkowana := true.
+        Transcript show: 'Wysrodkowuję ', (self nazwa )asString; cr; cr.
 
+    ].!
     
 obroc: kat
-    "Obraca wielokąt o zadany kąt w prawo, jeśli kąt jest w zakresie 0 < kat <= 90."
-    | radiany polowaWierzcholkow srodkowyWierzcholek srodekX srodekY nowyObrot|
+    "Obraca wielokąt o zadany kąt w prawo (zgodnie z ruchem wskazówek zegara),
+     jeśli kąt jest w zakresie 0 < kat <= 90."
+
+    | sX sY radiany|
     (kat > 0 and: [kat <= 90]) ifTrue: [
-        polowaWierzcholkow := wierzcholki size // 2.
-        srodkowyWierzcholek := wierzcholki at: (polowaWierzcholkow + 1).
-    
-        srodekX := ((wierzcholki first) x + (srodkowyWierzcholek x))/2.
-        srodekY := ((wierzcholki first) y + (srodkowyWierzcholek y))/2.
+        "Przekształcenie kąta na radiany"
         radiany := kat degreesToRadians.
-        "Przesuwany figurę na środek ukladu współrzędnych do obliczeń"
-        wierzcholki do: [:wierzcholek |
-        
-            wierzcholek x: wierzcholek x - srodekX.
-            wierzcholek y: wierzcholek y - srodekY.
-        ].
-         "Aktualizacja współrzędnych każdego wierzchołka"
+
+        "środek wielokąta"
+        sX := self srodekX.
+        sY := self srodekY.
+
+        "Obrót każdego wierzchołka"
         wierzcholki do: [:wierzcholek |
             | x y nowyX nowyY |
-            x := wierzcholek x.
-            y := wierzcholek y.
             
-            "Obliczanie nowych współrzędnych po obrocie"
+            "Przesunięcie srodka figury do punktu (0,0)"
+            x := wierzcholek x - sX.
+            y := wierzcholek y - sY.
+
+            "Obliczenie nowych współrzędnych po obrocie"
             nowyX := (x * radiany cos) + (y * radiany sin).
             nowyY := (-1)*(x * radiany sin) + (y * radiany cos).
-            
-            "Aktualizacja współrzędnych wierzchołka"
-            wierzcholek x: nowyX.
-            wierzcholek y: nowyY.
+
+            "Przesunięcie wierzchołka z powrotem na miejsce"
+            wierzcholek x: nowyX + sX.
+            wierzcholek y: nowyY + sY.
         ].
-        "Przesuwamy figurę z powrotem na jej miejsce"
-        wierzcholki do: [:wierzcholek |
-        
-            wierzcholek x: wierzcholek x + srodekX.
-            wierzcholek y: wierzcholek y + srodekY.
-        ].
-        "Aktualizacja wartości obrot - wykorzystujemy w komunikacie drukuj"
-        nowyObrot := self obrot + kat.
-        self obrot: nowyObrot.
-        
+
+        "Aktualizacja wartości obrotu figury"
+        self obrot: kat.
+        Transcript show: 'Obracam ', (self nazwa )asString, ' o ', kat asString, ' stopni.'; cr; cr.
+
+
     ] ifFalse: [
-        Transcript show: 'Kąt poza zakresem!'; cr.
+        Transcript show: 'Kąt poza zakresem!'; cr;cr.
     ].
+
 ! !
 
 Wielokat subclass: #Kwadrat
@@ -135,6 +159,7 @@ Wielokat subclass: #Kwadrat
 	"dodaj 2 figury w sensie pola"
 
 	| p |
+    Transcript show: 'Dodano do siebie 2 kwadraty o polach: ', (self pole asString), ' i ', (figura pole asString); cr.
 
 	p:=self pole + figura pole.
 	^(Kwadrat new) initialize: p sqrt! !
@@ -145,17 +170,14 @@ pole
 	"licz pole kwadratu"
     
 	^bok squared! 
-	
 
-wysrodkuj
-    "Przesun figure na srodek ukladu wspolrzednych"
-    | przesuniecie |
-    przesuniecie := bok / 2.
-    wierzcholki do: [:wierzcholek |
-        wierzcholek x: wierzcholek x - przesuniecie.
-        wierzcholek y: wierzcholek y - przesuniecie.
-    ].! !
-
+srodekY
+    "Zwraca wartość współrzędnej X środka figury"
+    
+    ^wysrodkowana
+        ifTrue: [0]
+        ifFalse: [bok / 2].
+!!
 
 !Kwadrat methodsFor: 'initialize-release'!
 
@@ -166,9 +188,10 @@ initialize: bok
 	self bok: bok. "Ustawienie boku kwadratu"
 	wierzcholki at: 2 put: bok@0.
 	wierzcholki at: 3 put: bok@bok.
-	wierzcholki at: 4 put: 0@bok.! !
+	wierzcholki at: 4 put: 0@bok.
+	self drukuj.
+! !
 	
-
 
 Wielokat subclass: #SzeciokatForemny
 	instanceVariableNames: ''
@@ -184,6 +207,8 @@ Wielokat subclass: #SzeciokatForemny
     
     | nowePole nowyBok |
     
+    Transcript show: 'Dodano do siebie 2 sześciokąty o polach: ', (self pole asString), ' i ', (figura pole asString); cr.
+
     "Obliczamy pole nowej figury"
     nowePole := self pole + figura pole.
     
@@ -196,24 +221,20 @@ Wielokat subclass: #SzeciokatForemny
 
 !SzeciokatForemny methodsFor: 'actions'!
 
+srodekY
+    "Zwraca wartość współrzędnej X środka figury"
+    
+    ^wysrodkowana
+        ifTrue: [0]
+        ifFalse: [bok * (3 sqrt)/ 2].!
+        
 pole
     "Oblicza pole sześciokąta foremnego"
   
     | pole |
-    
     pole := (3 * (3 sqrt) * (bok squared)) / 2.
     ^pole.
-! 
-
-wysrodkuj
-    "Przesun figure na srodek ukladu wspolrzednych"
-    | przesuniecieX przesuniecieY|
-    przesuniecieX := bok / 2.
-    przesuniecieY := bok*(3 sqrt) / 2.
-    wierzcholki do: [:wierzcholek |
-        wierzcholek x: wierzcholek x - przesuniecieX.
-        wierzcholek y: wierzcholek y - przesuniecieY
-    ].! !
+! !
 
 !SzeciokatForemny methodsFor: 'initialize-release'!
 
@@ -223,42 +244,40 @@ initialize: bok
 	super initialize: 6 name: 'SzesciokatForemny'.
 	self bok: bok. "Ustawienie boku sześciokąta"
 	wierzcholki at: 2 put: bok@0.
-	wierzcholki at: 3 put: (bok * 1.5)@(bok * (3 sqrt)/2).
+	wierzcholki at: 3 put: (bok * 1.5)@(bok * (3 sqrt)*0.5).
 	wierzcholki at: 4 put: bok@(bok * (3 sqrt)).
 	wierzcholki at: 5 put: 0@(bok * (3 sqrt)).
-	wierzcholki at: 6 put: (bok * 0.5 * (-1))@(bok * (3 sqrt)/2).! !
+	wierzcholki at: 6 put: (bok * 0.5 * (-1))@(bok * (3 sqrt)/2).
+	self drukuj.
+! !
 
 
-| szesciokat1 szesciokat2 wynikowaFigura |
+"Prezentowanie działania programu"
 
-szesciokat1 := SzeciokatForemny new initialize: 5.
-szesciokat2 := SzeciokatForemny new initialize: 7.
+| szesciokat1 szesciokat2 wynikowaFigura kwadrat1 kwadrat2|
 
 kwadrat1 := Kwadrat new initialize: 4.
 
-kwadrat1 drukuj.
 kwadrat1 wysrodkuj.
-
-kwadrat1 obroc: 90.
 kwadrat1 drukuj.
 
-kwadrat1 obroc: 30.
+kwadrat1 obroc: 45.
 kwadrat1 drukuj.
 
-kwadrat1 obroc: 130.
-kwadrat1 drukuj.
+kwadrat2 := Kwadrat new initialize: 3.
 
-szesciokat1 drukuj.
+wynikowaFigura := kwadrat1 + kwadrat2.
+
+szesciokat1 := SzeciokatForemny new initialize: 5.
 szesciokat1 wysrodkuj.
-
 szesciokat1 drukuj.
 szesciokat1 obroc: 60.
 
 szesciokat1 drukuj.
 
-Transcript show: 'Pole szesciokata o boku 5: ', (szesciokat1 pole asString); cr.
-Transcript show: 'Pole szesciokata o boku 7: ', (szesciokat2 pole asString); cr.
+szesciokat2 := SzeciokatForemny new initialize: 7.
 
 wynikowaFigura := szesciokat1 + szesciokat2.
 
-Transcript show: 'Pole wynikowej figury: ', (wynikowaFigura pole asString); cr.
+
+
